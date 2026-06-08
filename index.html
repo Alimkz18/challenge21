@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>21 День — Алим</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0d0f;
+    --surface: #141416;
+    --surface2: #1a1a1d;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.12);
+    --text: #f0ede8;
+    --muted: #7a7874;
+    --accent: #c9a96e;
+    --accent-dim: rgba(201,169,110,0.15);
+    --accent-dim2: rgba(201,169,110,0.08);
+    --green: #5a9e7a;
+    --green-dim: rgba(90,158,122,0.15);
+    --red-dim: rgba(180,80,80,0.12);
+    --purple-dim: rgba(140,100,200,0.12);
+    --r: 12px;
+    --r-sm: 8px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html { background: var(--bg); }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    max-width: 480px;
+    margin: 0 auto;
+    padding-bottom: 40px;
+  }
+
+  /* HEADER */
+  .app-header {
+    padding: 48px 24px 24px;
+    border-bottom: 0.5px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  .app-header::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -40px;
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, rgba(201,169,110,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .app-header-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 20px; }
+  .app-title { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 700; line-height: 1.2; }
+  .app-title span { color: var(--accent); }
+  .app-subtitle { font-size: 12px; color: var(--muted); margin-top: 4px; font-weight: 300; letter-spacing: 0.04em; }
+  .day-badge {
+    background: var(--accent-dim);
+    border: 0.5px solid var(--accent);
+    border-radius: 999px;
+    padding: 4px 14px;
+    font-size: 12px;
+    color: var(--accent);
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  /* STATS */
+  .stats-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; padding: 20px 24px; }
+  .stat { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--r-sm); padding: 12px 8px; text-align: center; }
+  .stat-n { font-size: 20px; font-weight: 500; color: var(--text); }
+  .stat-l { font-size: 10px; color: var(--muted); margin-top: 2px; line-height: 1.3; }
+
+  /* PROGRESS */
+  .progress-wrap { padding: 0 24px 20px; }
+  .progress-track { height: 3px; background: var(--surface2); border-radius: 2px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), #e8c97a); border-radius: 2px; transition: width 0.5s cubic-bezier(.4,0,.2,1); }
+  .progress-label { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-top: 6px; }
+
+  /* DAY GRID */
+  .grid-wrap { padding: 0 24px 20px; }
+  .grid-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px; }
+  .days-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 6px; }
+  .day-dot {
+    aspect-ratio: 1;
+    border-radius: 6px;
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column;
+    gap: 3px;
+    transition: border-color 0.15s, transform 0.1s;
+    position: relative;
+  }
+  .day-dot:active { transform: scale(0.93); }
+  .day-dot.is-current { border-color: var(--accent); border-width: 1.5px; }
+  .day-dot.is-done { background: var(--green-dim); border-color: var(--green); }
+  .day-dot.is-work { border-style: dashed; }
+  .day-dot-num { font-size: 10px; color: var(--muted); font-weight: 500; }
+  .day-dot.is-current .day-dot-num { color: var(--accent); }
+  .day-dot.is-done .day-dot-num { color: var(--green); }
+  .day-dot-pip { width: 5px; height: 5px; border-radius: 50%; background: var(--border2); }
+  .day-dot.is-done .day-dot-pip { background: var(--green); }
+  .day-dot.is-current .day-dot-pip { background: var(--accent); }
+
+  /* MAIN PANEL */
+  .panel { margin: 0 24px; background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--r); overflow: hidden; }
+  .panel-nav { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 0.5px solid var(--border); }
+  .panel-nav-btn { width: 32px; height: 32px; border-radius: 50%; background: var(--surface2); border: 0.5px solid var(--border); cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text); font-size: 14px; transition: background 0.15s; }
+  .panel-nav-btn:hover { background: var(--border2); }
+  .panel-nav-btn:disabled { opacity: 0.25; cursor: not-allowed; }
+  .panel-nav-center { text-align: center; }
+  .panel-day-title { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 500; }
+  .panel-day-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .panel-tabs { display: flex; border-bottom: 0.5px solid var(--border); }
+  .ptab { flex: 1; padding: 11px 8px; font-size: 12px; font-weight: 400; color: var(--muted); cursor: pointer; text-align: center; background: none; border: none; letter-spacing: 0.03em; transition: color 0.15s; border-bottom: 2px solid transparent; margin-bottom: -0.5px; }
+  .ptab.on { color: var(--accent); border-bottom-color: var(--accent); font-weight: 500; }
+  .tab-body { display: none; padding: 16px; }
+  .tab-body.on { display: block; }
+
+  /* TASKS */
+  .task-item { display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; border-bottom: 0.5px solid var(--border); }
+  .task-item:last-child { border-bottom: none; padding-bottom: 0; }
+  .task-item:first-child { padding-top: 0; }
+  .task-cb {
+    width: 22px; height: 22px; border-radius: 50%;
+    border: 1.5px solid var(--border2);
+    cursor: pointer; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s; margin-top: 1px;
+  }
+  .task-cb.on { background: var(--green); border-color: var(--green); }
+  .task-cb.on::after { content:''; width:5px; height:9px; border:1.5px solid #fff; border-top:none; border-left:none; transform:rotate(42deg) translateY(-1px); display:block; }
+  .task-info { flex: 1; }
+  .task-name { font-size: 14px; color: var(--text); line-height: 1.5; font-weight: 300; }
+  .task-name.done { text-decoration: line-through; color: var(--muted); }
+  .task-meta { display: flex; align-items: center; gap: 6px; margin-top: 5px; }
+  .task-tag { font-size: 10px; padding: 2px 8px; border-radius: 999px; font-weight: 500; letter-spacing: 0.03em; }
+  .task-dur { font-size: 10px; color: var(--muted); }
+  .t-wake { background: rgba(201,169,110,0.12); color: var(--accent); }
+  .t-vela { background: var(--purple-dim); color: #b088e8; }
+  .t-ta { background: rgba(60,120,200,0.12); color: #7aaee8; }
+  .t-book { background: rgba(90,158,122,0.12); color: #8ecaaa; }
+  .t-scroll { background: var(--red-dim); color: #e07878; }
+  .t-disc { background: rgba(200,100,60,0.12); color: #e8956a; }
+
+  /* WALL TAB */
+  .wall-block { margin-bottom: 14px; padding: 14px 16px; background: var(--surface2); border-radius: var(--r-sm); border-left: 2px solid var(--accent); }
+  .wall-block:last-child { margin-bottom: 0; }
+  .wall-block-title { font-size: 10px; color: var(--accent); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; font-weight: 500; }
+  .wall-block-text { font-size: 13px; color: var(--text); line-height: 1.75; font-weight: 300; }
+  .wall-block-text em { font-family: 'Playfair Display', serif; font-style: italic; color: var(--accent); font-size: 14px; }
+  .wins-list { display: flex; flex-direction: column; gap: 8px; }
+  .win { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: var(--green-dim); border-radius: var(--r-sm); border: 0.5px solid rgba(90,158,122,0.2); }
+  .win-ico { font-size: 16px; }
+  .win-txt { font-size: 13px; color: #8ecaaa; font-weight: 400; line-height: 1.4; }
+
+  /* WEEK TAB */
+  .week-card { background: var(--surface2); border-radius: var(--r-sm); padding: 16px; border: 0.5px solid var(--border2); }
+  .week-card-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 10px; }
+  .week-card-text { font-size: 13px; color: var(--text); line-height: 1.85; font-weight: 300; }
+  .week-quote {
+    margin-top: 14px;
+    padding: 14px 16px;
+    border-left: 2px solid var(--accent);
+    background: var(--accent-dim2);
+    border-radius: 0 var(--r-sm) var(--r-sm) 0;
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 14px;
+    color: var(--accent);
+    line-height: 1.7;
+  }
+
+  /* BOTTOM SAFE */
+  .safe { height: env(safe-area-inset-bottom, 16px); }
+</style>
+</head>
+<body>
+
+<div class="app-header">
+  <div class="app-header-top">
+    <div>
+      <div class="app-title">21 <span>День</span></div>
+      <div class="app-subtitle">Свободные: Вс · Пн · Вт · Ср &nbsp;·&nbsp; Работа: Чт · Пт · Сб &nbsp;·&nbsp; Старт: Сб</div>
+    </div>
+    <div class="day-badge" id="cur-badge">День 1</div>
+  </div>
+</div>
+
+<div class="stats-row">
+  <div class="stat"><div class="stat-n" id="s-done">0</div><div class="stat-l">задач</div></div>
+  <div class="stat"><div class="stat-n" id="s-days">0</div><div class="stat-l">дней</div></div>
+  <div class="stat"><div class="stat-n" id="s-streak">0</div><div class="stat-l">стрик</div></div>
+  <div class="stat"><div class="stat-n" id="s-pct">0%</div><div class="stat-l">прогресс</div></div>
+</div>
+
+<div class="progress-wrap">
+  <div class="progress-track"><div class="progress-fill" id="prog" style="width:0%"></div></div>
+  <div class="progress-label"><span>0 / 21 дней</span><span id="prog-days">день 1</span></div>
+</div>
+
+<div class="grid-wrap">
+  <div class="grid-label">Обзор</div>
+  <div class="days-grid" id="grid"></div>
+</div>
+
+<div class="panel">
+  <div class="panel-nav">
+    <button class="panel-nav-btn" id="btn-prev" onclick="chDay(-1)">←</button>
+    <div class="panel-nav-center">
+      <div class="panel-day-title" id="panel-title">День 1</div>
+      <div class="panel-day-sub" id="panel-sub">свободный день</div>
+    </div>
+    <button class="panel-nav-btn" id="btn-next" onclick="chDay(1)">→</button>
+  </div>
+  <div class="panel-tabs">
+    <button class="ptab on" onclick="switchTab('tasks',this)">Задачи</button>
+    <button class="ptab" onclick="switchTab('wall',this)">Стена</button>
+    <button class="ptab" onclick="switchTab('week',this)">Неделя</button>
+  </div>
+  <div class="tab-body on" id="tab-tasks"></div>
+  <div class="tab-body" id="tab-wall">
+    <div class="wall-block">
+      <div class="wall-block-title">Почему ты здесь</div>
+      <div class="wall-block-text">Ты устал от этой жизни — не от усталости, а от стояния на месте. Ты хочешь развития и готов к любой боли. Это не мотивация — это решение. Холодное и ясное. Без эмоций.</div>
+    </div>
+    <div class="wall-block">
+      <div class="wall-block-title">Когда захочешь бросить</div>
+      <div class="wall-block-text">Ты сейчас стоишь у выхода в зону комфорта. Там теплее. Но ты уже знаешь цену этой теплоты — ты платишь её каждый день когда ничего не меняется.<br><br><em>«Готов страдать сейчас — чтобы не жалеть потом.»</em><br><br>Это твои слова. Ты написал их не в эйфории — спокойно и трезво. Не предавай того себя.</div>
+    </div>
+    <div class="wall-block">
+      <div class="wall-block-title">Твои победы</div>
+      <div class="wins-list">
+        <div class="win"><span class="win-ico">🚭</span><span class="win-txt">Бросил курить после 5 лет — то, что большинство так и не делает</span></div>
+        <div class="win"><span class="win-ico">💪</span><span class="win-txt">Зал стал частью тебя — не думаешь, просто идёшь. Это высший уровень</span></div>
+        <div class="win"><span class="win-ico">🏢</span><span class="win-txt">Основал KAZSGROUP — реальный бизнес, не мечта</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="tab-body" id="tab-week"></div>
+</div>
+
+<div class="safe"></div>
+
+<script>
+const TASKS = [
+  { id:'wake',   name:'Подъём в 7:30',                                      tag:'t-wake',   lbl:'Режим',     dur:'',       free:true,  work:false, sun:false },
+  { id:'vela2',  name:'2 часа на VELA — ниша, конкуренты, продукт, идеи',   tag:'t-vela',   lbl:'VELA',      dur:'2 ч',    free:true,  work:false, sun:true  },
+  { id:'ta',     name:'2 часа тех анализ — одна тема вглубь',                tag:'t-ta',     lbl:'Трейдинг',  dur:'2 ч',    free:true,  work:false, sun:true  },
+  { id:'scroll', name:'Без скроллинга с утра — первый час',                  tag:'t-scroll', lbl:'Фокус',     dur:'',       free:true,  work:true,  sun:true  },
+  { id:'vela30', name:'30 мин на VELA — одна идея или тема',                 tag:'t-vela',   lbl:'VELA',      dur:'30 мин', free:false, work:true,  sun:false },
+  { id:'book',   name:'Прослушать главу книги',                               tag:'t-book',   lbl:'Книга',     dur:'~30 мин',free:false, work:true,  sun:false },
+  { id:'disc',   name:'День чистоты — не сломался',                          tag:'t-disc',   lbl:'Чистота',   dur:'',       free:true,  work:true,  sun:true  },
+];
+
+// День 1 = Суббота. Рабочие смены: Сб, Чт, Пт
+// Вс (дни 2,9,16) — поздний приход с субботней смены, без подъёма
+const WORK_DAYS_SET = new Set([1,6,7, 8,13,14, 15,20,21]);
+const SUN_DAYS_SET  = new Set([2,9,16]); // Воскресенье — поздний подъём
+
+const WEEKS = [
+  {
+    w:1,
+    title:'Первая неделя',
+    text:'Слушай, ты начал. Это уже больше чем то что ты делал раньше с этими планами. Но сейчас будет момент — где-то на третий или четвёртый день — когда станет скучно и захочется сказать себе «ладно, завтра». Ты знаешь этот момент. Ты с ним уже встречался сто раз. Не договаривайся. Просто открой — VELA, график, книгу. Не нужно делать идеально. Нужно просто делать. Ты бросил курить не потому что каждый день было легко. Ты просто не брал сигарету. Вот и здесь — просто не останавливайся.',
+    quote:'Не жди настроения. Настроение придёт после того как начнёшь.'
+  },
+  {
+    w:2,
+    title:'Вторая неделя',
+    text:'Окей, неделя позади. И скорее всего ты сейчас думаешь: «Ну и что? Ничего не изменилось». Это нормально — так и должно быть. Результат на второй неделе ещё не снаружи, он внутри. Ты просто каждый день делал то что сказал себе. Это и есть самое важное. Именно здесь ты обычно сдавался — не потому что было тяжело, а потому что не видел смысла. Но ты же знаешь что бывает потом. Потом жалеешь. Не сейчас — потом, когда уже поздно. Не надо снова через это проходить.',
+    quote:'Ты уже не тот кем был 7 дней назад. Даже если не чувствуешь этого.'
+  },
+  {
+    w:3,
+    title:'Финальная неделя',
+    text:'14 дней. Ты дошёл сюда. Помнишь как в начале казалось что 21 день это много? Осталось семь. Семь дней — это ничто. Не останавливайся сейчас, это было бы обидно — и ты сам это знаешь. Не ради красивой цифры — ради того чтобы знать о себе: я довожу. Это останется. В следующем челлендже, в VELA, в трейдинге — в любой момент когда будет тяжело, ты будешь помнить что уже делал это. И сделаешь снова. Давай. Совсем немного.',
+    quote:'Финиш — это не конец. Это доказательство что ты можешь начать следующее.'
+  }
+];
+
+const KEY = 'alim21_v1';
+function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {c:{},cur:1}; }catch(e){ return {c:{},cur:1}; } }
+function save(st){ try{ localStorage.setItem(KEY, JSON.stringify(st)); }catch(e){} }
+let st = load();
+
+function isWork(d){ return WORK_DAYS_SET.has(d); }
+function isSun(d){ return SUN_DAYS_SET.has(d); }
+function tasks(d){
+  if(isWork(d)) return TASKS.filter(t=>t.work);
+  if(isSun(d))  return TASKS.filter(t=>t.sun);
+  return TASKS.filter(t=>t.free);
+}
+function complete(d){ return tasks(d).every(t=>st.c[d+'_'+t.id]); }
+
+function renderGrid(){
+  const g=document.getElementById('grid'); g.innerHTML='';
+  for(let d=1;d<=21;d++){
+    const div=document.createElement('div');
+    const done=complete(d);
+    const cur=d===st.cur;
+    const work=isWork(d);
+    div.className='day-dot'+(cur?' is-current':'')+(done?' is-done':'')+(work?' is-work':'');
+    div.onclick=()=>{ st.cur=d; save(st); render(); };
+    div.innerHTML=`<div class="day-dot-num">${d}</div><div class="day-dot-pip"></div>`;
+    g.appendChild(div);
+  }
+}
+
+function renderTasks(){
+  const d=st.cur; const ts=tasks(d);
+  const panel=document.getElementById('tab-tasks');
+  panel.innerHTML=ts.map(t=>{
+    const key=d+'_'+t.id; const on=!!st.c[key];
+    return `<div class="task-item">
+      <div class="task-cb ${on?'on':''}" onclick="tog('${key}')"></div>
+      <div class="task-info">
+        <div class="task-name ${on?'done':''}">${t.name}</div>
+        <div class="task-meta">
+          <span class="task-tag ${t.tag}">${t.lbl}</span>
+          ${t.dur?`<span class="task-dur">${t.dur}</span>`:''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderWeek(){
+  const d=st.cur; const w=Math.ceil(d/7);
+  const info=WEEKS[w-1];
+  document.getElementById('tab-week').innerHTML=`
+    <div class="week-card">
+      <div class="week-card-label">${info.title}</div>
+      <div class="week-card-text">${info.text}</div>
+      <div class="week-quote">${info.quote}</div>
+    </div>`;
+}
+
+function renderHeader(){
+  const d=st.cur; const work=isWork(d); const sun=isSun(d);
+  const sub = work ? 'рабочий день' : sun ? 'воскресенье — без подъёма' : 'свободный день';
+  document.getElementById('cur-badge').textContent='День '+d;
+  document.getElementById('panel-title').textContent='День '+d;
+  document.getElementById('panel-sub').textContent=sub;
+  document.getElementById('btn-prev').disabled=d<=1;
+  document.getElementById('btn-next').disabled=d>=21;
+}
+
+function renderStats(){
+  let done=0, poss=0, dcomplete=0;
+  for(let d=1;d<=21;d++){
+    const ts=tasks(d); poss+=ts.length;
+    const n=ts.filter(t=>st.c[d+'_'+t.id]).length;
+    done+=n; if(n===ts.length) dcomplete++;
+  }
+  let streak=0;
+  for(let d=st.cur;d>=1;d--){ if(complete(d)) streak++; else break; }
+  const pct=Math.round(done/poss*100);
+  document.getElementById('s-done').textContent=done;
+  document.getElementById('s-days').textContent=dcomplete;
+  document.getElementById('s-streak').textContent=streak;
+  document.getElementById('s-pct').textContent=pct+'%';
+  document.getElementById('prog').style.width=pct+'%';
+  document.getElementById('prog-days').textContent='день '+st.cur;
+}
+
+function render(){ renderGrid(); renderHeader(); renderTasks(); renderWeek(); renderStats(); }
+
+window.tog=function(key){ st.c[key]=!st.c[key]; save(st); render(); };
+window.chDay=function(dir){ st.cur=Math.max(1,Math.min(21,st.cur+dir)); save(st); render(); };
+window.switchTab=function(name,el){
+  document.querySelectorAll('.ptab').forEach(t=>t.classList.remove('on'));
+  el.classList.add('on');
+  document.querySelectorAll('.tab-body').forEach(t=>t.classList.remove('on'));
+  document.getElementById('tab-'+name).classList.add('on');
+};
+
+render();
+</script>
+</body>
+</html>
